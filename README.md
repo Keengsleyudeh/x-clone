@@ -17,7 +17,6 @@ This project is a full-featured Twitter clone that implements core Twitter funct
 ## Project Structure
 
 ```
-```
 twitter-clone/
 ├── backend/                # Backend application
 │   ├── controllers/       # Request handlers
