@@ -13,14 +13,16 @@ import { formatPostDate } from "../../utils/date";
 
 const Post = ({ post }) => {
 	const [comment, setComment] = useState("");
-	const { data: authUser } = useQuery({ queryKey: ["authUser"] });
-	const queryClient = useQueryClient();
-	const postOwner = post.user;
-	const isLiked = post.likes.includes(authUser._id);
+    const { data: authUser } = useQuery({ queryKey: ["authUser"] });
+    const queryClient = useQueryClient();
+    const postOwner = post?.user;
+    
+    // Fix: Add proper type checking for likes array
+    const isLiked = Array.isArray(post?.likes) ? post.likes.includes(authUser?._id) : false;
 
-	const isMyPost = authUser._id === post.user._id;
+    const isMyPost = authUser?._id === post?.user?._id;
 
-	const formattedDate = formatPostDate(post.createdAt);
+    const formattedDate = formatPostDate(post.createdAt);
 
 	const { mutate: deletePost, isPending: isDeleting } = useMutation({
 		mutationFn: async () => {
@@ -49,6 +51,7 @@ const Post = ({ post }) => {
 			try {
 				const res = await fetch(`/api/posts/like/${post._id}`, {
 					method: "POST",
+					credentials: "include",
 				});
 				const data = await res.json();
 				if (!res.ok) {
@@ -59,15 +62,15 @@ const Post = ({ post }) => {
 				throw new Error(error);
 			}
 		},
-		onSuccess: (updatedLikes) => {
-			// this is not the best UX, bc it will refetch all posts
-			// queryClient.invalidateQueries({ queryKey: ["posts"] });
-
-			// instead, update the cache directly for that post
-			queryClient.setQueryData(["posts"], (oldData) => {
-				return oldData.map((p) => {
+		onSuccess: (data) => {
+			// Update the cache directly for real-time updates
+			queryClient.setQueryData(["posts"], (oldPosts) => {
+				return oldPosts.map((p) => {
 					if (p._id === post._id) {
-						return { ...p, likes: updatedLikes };
+						return {
+							...p,
+							likes: data.likes, // Use the updated likes array from the server response
+						};
 					}
 					return p;
 				});
@@ -240,7 +243,7 @@ const Post = ({ post }) => {
 										isLiked ? "text-pink-500" : "text-slate-500"
 									}`}
 								>
-									{post.likes.length}
+									{post?.likes?.length}
 								</span>
 							</div>
 						</div>
