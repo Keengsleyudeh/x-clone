@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "cross-env NODE_ENV=development nodemon backend/server.js",
     "start": "cross-env NODE_ENV=production node backend/server.js",
-    "build": "cd frontend && npm install && npm run build && cd .. && npm install"
+    "build": "cd frontend && npm install && ./node_modules/.bin/vite build && cd .. && npm install"
   },
   "keywords": [],
   "author": "",
